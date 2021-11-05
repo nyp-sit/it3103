@@ -321,7 +321,7 @@ bash train.sh
 After the script is run, you may see a lot of warning messages and you can safely ignore those (most of them are due to deprecation warning). 
 If everything goes smoothly, you will start seeing the following training output:
 
-![screen output](nb_images/training_output.png)
+![screen output](https://nypai.s3.ap-southeast-1.amazonaws.com/it3103/resources/training_output.png)
 
 
 ## Start the evaluation
@@ -347,7 +347,7 @@ To save you from typing repeatedly the commands above, an ``eval.sh`` is provide
 
 Open a new terminal and do the following:
 
-```
+```bash
 export CUDA_VISIBLE_DEVICES="-1"
 cd ~/balloon_project/
 bash eval.sh

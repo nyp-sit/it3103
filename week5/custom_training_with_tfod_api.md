@@ -326,12 +326,11 @@ If everything goes smoothly, you will start seeing the following training output
 
 ## Start the evaluation
 
-To see how model performs on validation set, you need to run evaluation script separately. As the training process is already using up ALL the GPU memory, your eval script will complain about OOM (out-of-memory) error when evaluation script is trying to allocate tensors in the GPU. If you have multiple GPUs on your machine, you can always direct the evaluation script to run on a separate GPU (e.g. by setting CUDA_VISIBLE_DEVICES='1' to target GPU#1). But in our case, we only have a single GPU, so one workaround is to force the eval script to run using CPU instead by setting CUDA_VISIBLE_DEVICES="-1",  basically telling Tensorflow that we don't have any CUDA-capable device to use, and it will fall back to using only CPU. 
+To see how model performs on validation set, you need to run evaluation script separately. As the training process is already using up ALL the GPU memory, your eval script will complain about OOM (out-of-memory) error when evaluation script is trying to allocate tensors in the GPU. If you have multiple GPUs on your machine, you can always direct the evaluation script to run on a separate GPU (e.g. by setting CUDA_VISIBLE_DEVICES='1' to target GPU#1). But in our case, we only have a single GPU, so one workaround is to force the eval script to run using CPU instead by setting the environment variable CUDA_VISIBLE_DEVICES="-1",  basically telling Tensorflow that we don't have any CUDA-capable device to use, and it will fall back to using only CPU. 
 
 You can run the evaluation using model_main_tf2.py provided by TFOD API. The script will run evaluation instead of training if a ``checkpoint_dir`` is passed as an argument like below: 
 
 ```
-export CUDA_VISIBLE_DEVICES="-1"
 MODEL=ssd_mobilenet_v2_320x320_coco17_tpu-8
 EXPERIMENT=run1
 PIPELINE_CONFIG_PATH=/home/ubuntu/balloon_project/models/${MODEL}/${EXPERIMENT}/pipeline.config
@@ -349,6 +348,7 @@ To save you from typing repeatedly the commands above, an ``eval.sh`` is provide
 Open a new terminal and do the following:
 
 ```
+export CUDA_VISIBLE_DEVICES="-1"
 cd ~/balloon_project/
 bash eval.sh
 ```

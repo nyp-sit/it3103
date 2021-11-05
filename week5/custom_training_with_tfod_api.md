@@ -45,12 +45,12 @@ balloon_project
 -data
  -images
  -annotations
--exported-models
+-exported_models
 -models
  -ssd_mobilenet_v2_320x320_coco17_tpu-8/run1
  -ssd_mobilenet_v2_320x320_coco17_tpu-8/run2
  -ssd_resnet101_v1_fpn_640x640_coco17_tpu-8/run1
--pretrained-models
+-pretrained_models
  -ssd_mobilenet_v2_320x320_coco17_tpu-8
  -ssd_resnet101_v1_fpn_640x640_coco17_tpu-8
 ```
@@ -61,7 +61,7 @@ The folders will be used for storing the files mentioned below:
 - ``balloon_project/data/``: contains label mapping file (`label_map.pbtxt`) and TFRecords (e.g. `train.record`, `val.record`)
 - ``balloon_project/data/images``: used to store the image files
 - ``balloon_project/data/annotations``: used to store the annotation files (e.g. Pascal VOC XML annotation files)
-- ``balloon_project/exported-models``: used to store the custom trained model, in SavedModel format.
+- ``balloon_project/exported_models``: used to store the custom trained model, in SavedModel format.
 - ``balloon_project/models``: for storing the training checkpoints of different models (e.g. you can have one subfolder ``models/ssd_resnet101_v1_fpn_640x640_coco17_tpu-8`` for training model based on ``ssd_resnet`` pretrained model and ``models/ssd_mobilenet_v2_320x320_coco17_tpu-8`` for model based on ``ssd_mobilenet`` pretrained model.  Each of these model-specific subfolder may in turn contains different subfolders for each experimental run, e.g. `run1`, `run2`, and each `runX` folder contains the `pipeline.config` file which is the configuration file used for training and evaluating the detection model for the specific experiment.
 - ``balloon_project/pretrained_models``: the pretrained model checkpoints that you downloaded.  The different subfolders are used for different pretrained-models. 
 
@@ -195,10 +195,10 @@ cd ~
 wget http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_mobilenet_v2_320x320_coco17_tpu-8.tar.gz
     
 ## unzip the model.tar.gz to the project pretrained_models subdirectory
-tar xzvf ssd_mobilenet_v2_320x320_coco17_tpu-8.tar.gz -C ~/balloon_project/pretrained-models/
+tar xzvf ssd_mobilenet_v2_320x320_coco17_tpu-8.tar.gz -C ~/balloon_project/pretrained_models/
 ```
 
-In the `balloon_project/pretrained-models` folder, you will see a subfolder called ``'ssd_mobilenet_v2_320x320_coco17_tpu-8'`` that contains subfolders called ``checkpoint`` and ``saved_model`` and also a pipeline.config file specific to this model. You can configure your training and evaluation by doing some setting in this file (see the next section how to configure this file).  
+In the `balloon_project/pretrained_models` folder, you will see a subfolder called ``'ssd_mobilenet_v2_320x320_coco17_tpu-8'`` that contains subfolders called ``checkpoint`` and ``saved_model`` and also a pipeline.config file specific to this model. You can configure your training and evaluation by doing some setting in this file (see the next section how to configure this file).  
 
 The checkpoint directory contains the checkpoints that we can use for training our custom model, with the names like ``ckpt-0.*``. 
 
@@ -213,7 +213,7 @@ We will now configure the training pipeline for our object detector. Depending o
 mkdir -p ~/balloon_project/models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1
 
 # copy the pipeline.config file to the target folder
-cp ~/balloon_project/pretrained-models/ssd_mobilenet_v2_320x320_coco17_tpu-8/pipeline.config ~/balloon_project/models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1/pipeline.config
+cp ~/balloon_project/pretrained_models/ssd_mobilenet_v2_320x320_coco17_tpu-8/pipeline.config ~/balloon_project/models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1/pipeline.config
 ```
 
 Open the ``pipeline.config`` file located in ``models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1 directory with an editor and modify the following sections:
@@ -243,7 +243,7 @@ train_config: {
     }
     ...
   }
-  fine_tune_checkpoint: "/home/ubuntu/balloon_project/pretrained-models/ssd_mobilenet_v2_320x320_coco17_tpu-8/checkpoint/ckpt-0"
+  fine_tune_checkpoint: "/home/ubuntu/balloon_project/pretrained_models/ssd_mobilenet_v2_320x320_coco17_tpu-8/checkpoint/ckpt-0"
   ...
     
   fine_tune_checkpoint_type: "detection" # Set this to "detection" since we want to be training the full detection model
@@ -331,9 +331,9 @@ To see how model performs on validation set, you need to run evaluation script s
 You can run the evaluation using model_main_tf2.py provided by TFOD API. The script will run evaluation instead of training if a ``checkpoint_dir`` is passed as an argument like below: 
 
 ```
+EXPORT CUDA_VISIBLE_DEVICES="-1"
 MODEL=ssd_mobilenet_v2_320x320_coco17_tpu-8
 EXPERIMENT=run1
-CUDA_VISIBLE_DEVICES=""
 PIPELINE_CONFIG_PATH=/home/ubuntu/balloon_project/models/${MODEL}/${EXPERIMENT}/pipeline.config
 MODEL_DIR=/home/ubuntu/balloon_project/models/${MODEL}/${EXPERIMENT}
 CHECKPOINT_DIR=/home/ubuntu/balloon_project/models/${MODEL}/${EXPERIMENT}
@@ -431,7 +431,7 @@ Before running the export script, make sure you have stopped the training proces
 
 A convenience script (`export.sh`) that contains the above has been created to avoid typing this repeatedly. 
 
-Afterwards, you should see the following contents in `exported-models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1`: 
+Afterwards, you should see the following contents in `exported_models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1`: 
 
 ```
 - checkpoint 
@@ -476,7 +476,7 @@ A note about the checkpoint number. In TFOD 2, the checkpoint number is no more 
 
 In this version of TFOD, during the training loop, a checkpoint is created every `1000` training steps by default. So just multiply the number with the `1000` to get the corresponding steps. You can control how frequent the checkpoint is created by passing in the argument ``--checkpoint_every_n`` to `exporter_main_v2.py`
 
-For example, if you have the best mAP at 5000 steps,  then you should use checkpoint file: `ckpt-5`.   Note that the trainer only keeps certain number of most recent checkpoints (e..g 7 in this version of TFOD API)  and discarded the older ones.  If you want to keep more than 7 most recent checkpoints, you will need to modify the file model_main_tf2.py, to pass the extra parameter `checkpoint_max_to_keep`.  
+For example, if you have the best mAP at 5000 steps,  then you should use checkpoint file: `ckpt-5`.   Note that the trainer only keeps certain number of most recent checkpoints (e..g 7 in this version of TFOD API)  and discarded the older ones.  If you want to keep more than 7 most recent checkpoints, you will need to modify the file `model_main_tf2.py`, to pass the extra parameter `checkpoint_max_to_keep`.  
 
 
 
@@ -493,7 +493,7 @@ Now you are ready to test your trained model. Run the provided notebook `detect_
 We have already trained the balloon detector on a GPU server. You can try out our trained model. Change directory to your balloon project directory and download our model using: 
 
 ```
-wget https://nyp-aicourse.s3-ap-southeast-1.amazonaws.com/pretrained-models/balloon_model.tar.gz -C exported-models/ssd_mobilenet_v2_320x320_coco17_tpu-8
+wget https://nyp-aicourse.s3-ap-southeast-1.amazonaws.com/pretrained-models/balloon_model.tar.gz -C exported_models/ssd_mobilenet_v2_320x320_coco17_tpu-8
 
 tar xzvf balloon_model.tar.gz
 ```

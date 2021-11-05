@@ -430,6 +430,11 @@ Before running the export script, make sure you have stopped the training proces
 
 A convenience script (`export.sh`) that contains the above has been created to avoid typing this repeatedly. 
 
+```bash
+cd ~/balloon_project/
+bash export.sh
+```
+
 Afterwards, you should see the following contents in `exported_models/ssd_mobilenet_v2_320x320_coco17_tpu-8/run1`: 
 
 ```

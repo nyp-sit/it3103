@@ -25,7 +25,7 @@ interpreter = tf.lite.Interpreter(tflite_model_dir)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
-#output_details = interpreter.get_output_details()
+
 
 interpreter.set_tensor(input_details[0]['index'], img)
 interpreter.invoke()
@@ -42,12 +42,3 @@ names = ['output scores', "boxes", "num of detections", "classes" ]
 for i in range(4):
   output_data = interpreter.get_tensor(output_details[i]['index'])
   print(f"{names[i]} = \n {output_data}")
-
-# my_signature = interpreter.get_signature_runner("detect")
-# print(my_signature)
-# my_signature is callable with input as arguments.
-# output = my_signature(x=tf.constant([1.0], shape=(1,10), dtype=tf.float32))
-# output = my_signature(x=img)
-# print(output)
-
-# print(output_details[0])

@@ -1,0 +1,12 @@
+tunnels:
+  ssh:
+    proto: tcp
+    addr: 22
+
+  tensorboard:
+    proto: http
+    addr: 6006
+    inspect: false
+    bind_tls: true
+
+

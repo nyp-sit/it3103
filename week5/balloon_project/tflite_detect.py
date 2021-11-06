@@ -103,9 +103,9 @@ def load_image(path):
     #   (1, im_height, im_width, 3)).astype(np.float32)
 
 
-img = load_image("/home/markk/git/it3103/week5/balloon_project/test_samples/2.png")
-model_file = "/home/markk/model.tflite"
-labels = load_labels("/home/markk/labels.txt")
+img = load_image("/home/ubuntu/git/it3103/week5/balloon_project/test_samples/sample_balloon.jpeg")
+model_file = "/home/ubuntu/model.tflite"
+labels = load_labels("/home/ubuntu/labels.txt")
 interpreter = make_interpreter(model_file)
 interpreter.allocate_tensors()
 _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
@@ -113,45 +113,3 @@ results = detect_objects(interpreter, img, 0.4)
 print(results)
 draw_image(img, results, labels, img.size)
 
-# def main():
-#     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-#     parser.add_argument('-m', '--model', type=str, required=True, help='File path of .tflite file.')
-#     parser.add_argument('-l', '--labels', type=str, required=True, help='File path of labels file.')
-#     parser.add_argument('-t', '--threshold', type=float, default=0.4, required=False, help='Score threshold for detected objects.')
-#     parser.add_argument('-v', '--video', type=str, required=True, help='Path to video')
-#     parser.add_argument('-e', '--use_edgetpu', action='store_true', default=False, help='Use EdgeTPU')
-#     args = parser.parse_args()
-
-#     labels = load_labels(args.labels)
-#     interpreter = make_interpreter(args.model, args.use_edgetpu)
-#     interpreter.allocate_tensors()
-#     _, input_height, input_width, _ = interpreter.get_input_details()[0]['shape']
-
-#     # Initialize video stream
-#     video = cv2.VideoCapture(video)
-#     time.sleep(1)
-
-#     while(video.isOpened()):
-#         try:
-#             ret, frame = video.read()
-#             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-#             frame_resized = cv2.resize(frame_rgb, (input_width, input_height))
-#             input_data = np.expand_dims(frame_resized, axis=0)
-#             # Perform inference
-#             results = detect_objects(interpreter, input_data, args.threshold)
-
-#             draw_image(image, results, labels, image.size)
-
-#             if( cv2.waitKey( 5 ) & 0xFF == ord( 'q' ) ):
-#                 fps.stop()
-#                 break
-#         except KeyboardInterrupt:
-#             break
-
-#     cv2.destroyAllWindows()
-#     video.release()
-#     time.sleep(2)
-
-
-# if __name__ == '__main__':
-#     main()

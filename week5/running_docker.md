@@ -23,7 +23,7 @@ Pre-requisites:
 From the command prompt, type the following to start the docker to use all GPUs on host, and mapped the local host data directory (e.g. `c:/Users/markk/balloon_project`) to the directory in container (e.g. `/home/ubuntu/balloon_project`), and also expose the port `8888` and port `6006` respectively for accessing the Jupyter server and Tensorboard running inside the container.
 
 ```bash
-docker run -it --gpus all -v  c:/Users/markk/balloon_project:/home/ubuntu/balloon_project -p 8888:8888 -p 6006:6000 --name dlcontainer --hostname it3103 ainyp/dlimage:1.0
+docker run -it --gpus all -v  c:/Users/markk/balloon_project:/home/ubuntu/balloon_project -p 8888:8888 -p 6006:6006 --name dlcontainer --hostname it3103 ainyp/dlimage:1.0
 ```
 
 The first time you run the command, it will take a while as it needs to download the docker image (which is about 8 GB) from the docker hub. 

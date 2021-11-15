@@ -47,7 +47,7 @@ docker rm dlcontainer
 Or if you want to continue with the previous exited container: 
 
 ```bash
-docker start -it dlcontainer
+docker start -i dlcontainer
 ```
 
 #### Start the Jupyter server

@@ -37,7 +37,18 @@ docker run -it -v  c:/Users/markk/balloon_project:/home/ubuntu/balloon_project -
 
 The first time you run the command, it will take a while as it needs to download the docker image (which is about 8 GB) from the docker hub. 
 
+If you exit the docker, and try to do `docker run` again, you may encounter error saying dlcontainer already used, as you cannot run two containers with the same container name. 
+You can either remove the exited docker container by the following:
 
+```bash
+docker rm dlcontainer 
+```
+
+Or if you want to continue with the previous exited container: 
+
+```bash
+docker start -it dlcontainer
+```
 
 #### Start the Jupyter server
 

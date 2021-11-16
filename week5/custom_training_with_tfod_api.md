@@ -186,7 +186,7 @@ You will see that two records created in the directory `~/balloon_project/data`:
 
 Training a state of the art object detector from scratch can take days, even when using multiple GPUs!  Furthermore we will need a lot of annotated images to achieve a reasonable accuracy. 
 We will leverage transfer learning to speed up training. We'll take an object detection model that is already pre-trained on a large dataset (e.g. COCO dataset), and 
-reuse some of it's parameters to initialize our new model. You can download the pre-trained model from Tensorflow model zoo. 
+reuse some of it's parameters to initialize our new model. You can download the pre-trained model from [Tensorflow 2 model zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md). 
 
 ```
 ## Download the pre-trained model to your home directory

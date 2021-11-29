@@ -1,0 +1,336 @@
+<html>
+
+    <script src="jquery-3.4.1.min.js"></script>
+
+    <!-- Load TensorFlow.js -->
+    <script src="tf.min.js"></script>
+    
+    <!-- Load PoseNet -->
+    <script src="posenet.min.js">
+    </script>
+    
+    <!-- Initialize PoseNet -->
+    <script type="text/javascript">
+        var posemodel = null;
+
+        // This piece of code loads up the Tensorflow JS
+        // Posenet model. Posenet is a Convolutional Neural
+        // Network that is able to perform Human Pose
+        // Estimation off your browser.
+        //
+        posenet.load().then(function(model) {
+            // posenet model loaded
+            console.log('Posenet loaded');
+            posemodel = model;
+        });
+
+    </script>
+
+    <script>
+        //--------------------
+        // GET USER MEDIA CODE
+        //--------------------
+        navigator.getUserMedia = ( navigator.getUserMedia ||
+                            navigator.webkitGetUserMedia ||
+                            navigator.mozGetUserMedia ||
+                            navigator.msGetUserMedia);
+
+        var webcamStarted = false;
+        var video;
+        var recognizedDiv;
+        var logDiv;
+        var webcamStream;
+
+        var labels = ["JUMPING",
+                        "JUMPING_JACKS",
+                        "BOXING",
+                        "WAVING_2HANDS",
+                        "WAVING_1HAND",
+                        "CLAPPING_HANDS"];
+
+        // Starts the web cam
+        //
+        function startWebcam() {
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia (
+
+                    // constraints
+                    {
+                        video: true,
+                        audio: false
+                    },
+
+                    // successCallback
+                    function(localMediaStream) {
+                        webcamStream = localMediaStream;
+                        video.srcObject = localMediaStream;
+                        video.play();
+                    },
+
+                    // errorCallback
+                    function(err) {
+                        console.log("The following error occured: " + err);
+                    }
+                );
+            } 
+            else 
+            {
+                console.log("getUserMedia not supported");
+            }  
+        }
+
+        // Stops the web cam
+        //
+        function stopWebcam() {
+            webcamStarted = false;
+            webcamStream.getTracks()[0].stop();
+        }
+
+        
+        // Initialize the application by starting the web cam
+        // This method is called by the body's onload event.
+        //
+        function init() {
+            video = document.querySelector('video');
+            video.addEventListener('loadeddata', (event) => {
+                console.log('loadeddata')
+                webcamStarted = true;
+            });
+
+            recognizedDiv = document.getElementById('recognizedDiv');
+            logDiv = document.getElementById('logDiv');
+
+            startWebcam();
+        }
+
+        // Computes the distance between (x1,y1), (x2,y2)
+        //
+        function computeLength(x1, y1, x2, y2)
+        {
+            return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        }
+
+
+        // Returns the index of the maximum value in an array.
+        //
+        function indexOfMax(arr) {
+            if (arr.length === 0) {
+                return -1;
+            }
+
+            var max = arr[0];
+            var maxIndex = 0;
+
+            for (var i = 1; i < arr.length; i++) {
+                if (arr[i] > max) {
+                    maxIndex = i;
+                    max = arr[i];
+                }
+            }
+
+            return maxIndex;
+        }
+
+        // Construct a tensor of 1x32x36.
+        //
+        var openPosePoints = [[]];
+        for (var i = 0; i < 32; i++)
+            openPosePoints[0].push([
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+            ])
+
+        // Recognize pose
+        //
+        async function recognizePose()
+        {
+            if (posemodel == null || webcamStarted == false)
+            {
+                // The Posenet model or the camera is not ready,
+                // so return.
+                //
+                window.setTimeout(recognizePose, 50);
+                return;
+            }
+
+            // call the Tensorflow pose estimation 
+            //
+            const pose = await posemodel.estimateSinglePose(video, {
+                flipHorizontal: false
+            });
+
+            // Draw dots on the video to show the identified joints
+            //
+            var dots = document.getElementById('dots');
+            var nodes = []
+            for (var i = 0; i < dots.childNodes.length; i++)
+                if (dots.childNodes[i].tagName == "DIV")
+                    nodes.push(dots.childNodes[i]);
+
+            pose.keypoints.forEach(function(item, index) {
+                if (item.score >= 0.5)
+                {
+                    nodes[index].style.display = '';
+                    nodes[index].style.left = item.position.x;
+                    nodes[index].style.top = item.position.y;
+                }
+                else
+                {
+                    nodes[index].style.display = 'none';
+                    nodes[index].style.left = 0;
+                    nodes[index].style.top = 0;
+                }
+            });
+
+            // normalize the x,y
+            //
+            var neckx = 0;
+            var necky = 0;
+            var theight = 1;
+
+            // find the midpoint (neck joint) of the left/right shoulder joints.
+            //
+            if (pose.keypoints[5].score >= 0.1 && pose.keypoints[6].score >= 0.1)  // left/right shoulder
+            {
+                // estimate the neck position as the midpoint of the left/right shoulders
+                //
+                neckx = (pose.keypoints[5].position.x + pose.keypoints[6].position.x) / 2;
+                necky = (pose.keypoints[5].position.y + pose.keypoints[6].position.y) / 2;
+            }
+            
+            // estimate the torso height
+            //
+            if (neckx != 0 && necky != 0)
+            {
+                if (pose.keypoints[11].score >= 0.1)
+                {
+                    // estimate the torso height from the neck to the left hip
+                    theight = computeLength(pose.keypoints[11].position.x, pose.keypoints[11].position.y, neckx, necky);
+                }
+                else if (pose.keypoints[12].score >= 0.1)
+                {
+                    // estimate the torso height from the neck to the right hip
+                    theight = computeLength(pose.keypoints[12].position.x, pose.keypoints[12].position.y, neckx, necky);
+                }
+
+            }
+
+            // TODO:
+            // Set up the mapping indexes
+            //
+            var mapping = [0, 15, 14, 17, 16, 5, 2, 6, 3, 7, 4, 11, 8, 12, 9, 13, 10];
+            
+            // Insert the 18 keypoints (with x, y coordinates)
+            //
+            var lastIndex = openPosePoints[0].length
+            openPosePoints[0].push([
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+                0.0, 0.0, 0.0, 0.0, 0.0,   0.0, 0.0, 0.0, 0.0, 
+            ])
+
+            for (var i = 0; i < pose.keypoints.length; i++)
+            {
+                if (pose.keypoints[i].score >= 0.1)
+                {
+                    openPosePoints[0][lastIndex][mapping[i] * 2 + 0] = (pose.keypoints[i].position.x - neckx) / theight;
+                    openPosePoints[0][lastIndex][mapping[i] * 2 + 1] = (pose.keypoints[i].position.y - necky) / theight;
+                }
+            }
+
+            //logDiv.innerHTML = JSON.stringify(pose.keypoints);
+            // Uncomment: logDiv.innerHTML = JSON.stringify(openPosePoints);
+            //recognizedDiv.innerHTML = "HELLO"
+            // TODO:
+            // Remove the first (oldest) set of keypoints so that we
+            // always maintain a sliding window of the latest 32 keypoints
+            //
+            if (openPosePoints[0].length > 32)
+                openPosePoints[0].splice(0, 1);     
+
+            // POST our tensor of 1x32x36 to our AI server.
+            //
+            if (openPosePoints[0].length == 32)
+            {
+                //logDiv.innerHTML = JSON.stringify(openPosePoints);
+
+                $.ajax({
+                    type: "POST",
+                    // TODO:
+                    // Enter the URL to your API on the web server here
+                    //
+                    url: "/predict",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ "instances": openPosePoints }),
+                    dataType: "text",
+                    success: function(result)
+                    {
+                        var labels = ["JUMPING", "JUMPING_JACKS", "BOXING", "WAVING_2HANDS", "WAVING_1HAND", "CLAPPING_HANDS"]
+
+                        //console.log(result)
+
+                        // Once the AI server computes the result,
+                        // this function will be executed to display
+                        // the best recognized activity.
+                        //
+                        console.log(result)
+                        //var best_class = indexOfMax(result.predictions[0]);
+                        //recognizedDiv.innerHTML = labels[best_class] + " " + result.predictions[0][best_class];
+                        recognizedDiv.innerHTML = result
+                        console.log(result)
+                    }
+                });
+
+                //recognizedDiv.innerHTML = labels[argmax] + " " + y1[argmax];
+                //console.log(labels[argmax]);
+            }            
+
+            window.setTimeout(recognizePose, 50);
+        }
+
+        window.setTimeout(recognizePose, 50);
+
+    </script>
+    <body onload="init();">
+        
+        <div>
+            <h1>Current video stream</h1>
+            <div style='width:533px; height:400px; position:relative' >
+
+                <video  width=533 height=400 id="video" controls autoplay></video>
+
+                <div id="dots" style='position:absolute; top:0; left: 0'>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>0</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>1</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>2</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>3</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>4</div>
+
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>5</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>6</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>7</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>8</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>9</div>
+
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>10</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>11</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>12</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>13</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>14</div>
+
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>15</div>
+                    <div style='color: yellow; background-color:yellow; border-radius:3px; width:6px; height: 6px; position:absolute; top:0; left: 0'>16</div>
+                </div>
+                <div id="recognizedDiv" style="font-size:50px; ">
+                </div>
+                <div id="logDiv">
+                </div>
+            </div>
+        </div>
+
+    </body>
+    
+</html>

@@ -26,13 +26,7 @@ pip install -r requirements.txt
 
 ## Run the Flask application
 
-Change directory to the app folder and unzip your saved model in the app folder. 
-
-```
-unzip activity_model.zip
-```
-
-You should see the activity_model folder created which contained the keras saved model. Run the flask using the following: 
+Unzip your activity_model.zip and copy the activity_model folder into the `app` folder of your flask app. The activity_model folder contained the keras saved model. Run the flask using the following: 
 
 ```
 flask run

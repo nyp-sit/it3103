@@ -2,7 +2,7 @@
 
 ## Tensorflow Playground 
 
-We will create an online neural network interactive tool to construct our neural to perform simple binary classification and to consolidate some of the concepts we learnt from the lecture and see how activation function, learning rate, and the capacity (width and depth) affects the ability of the neural network to learn.
+We will use an online neural network interactive tool to construct a neural network to perform simple binary classification and to consolidate some of the concepts we learnt from the lecture and see how activation function, learning rate, and the capacity (width and depth) affects the ability of the neural network to learn.
 
 Visit the URL: https://playground.tensorflow.org/
 

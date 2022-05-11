@@ -359,7 +359,7 @@ Now it is time to grab your coffee, sit back and relax :)
 
 
 
- ![coffee break](https://nyp-aicourse.s3.ap-southeast-1.amazonaws.com/it3103/resources/coffeebreak.jpeg)
+ ![coffee break](https://nyp-aicourse.s3.ap-southeast-1.amazonaws.com/it3103/resources/coffeebreak.jpg)
 
 ## Monitoring Training Progress with Tensorboard 
 

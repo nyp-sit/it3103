@@ -1,1 +1,0 @@
-copy the image files (.jpg) here

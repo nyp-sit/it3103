@@ -1,10 +1,4 @@
-## Enable Browser-based connect to EC2 instance 
-To overcome the firewall blocking the SSH access, you can use the browser-based EC2 instance connect method. 
-Before connecting, you will need to install the following in the instance, which incidentally require you to have SSH access using standalone ssh client.
 
-`$ sudo apt-get update`
-
-`$ sudo apt-get install ec2-instance-connect`
 
 ## Update default python to python3 
 

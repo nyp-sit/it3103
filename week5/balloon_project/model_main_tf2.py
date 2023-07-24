@@ -87,7 +87,7 @@ def main(unused_argv):
         sample_1_of_n_eval_on_train_examples=(
             FLAGS.sample_1_of_n_eval_on_train_examples),
         checkpoint_dir=FLAGS.checkpoint_dir,
-        wait_interval=300, timeout=FLAGS.eval_timeout)
+        wait_interval=0, timeout=FLAGS.eval_timeout)
   else:
     if FLAGS.use_tpu:
       # TPU is automatically inferred if tpu_name is None and
